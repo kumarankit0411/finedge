@@ -33,6 +33,25 @@ Built with **Node.js, Express, MongoDB (Mongoose)** and fully covered by **Jest 
 
 ---
 
+## Assignment Coverage
+
+| Requirement | Sub-feature | Status |
+|-------------|-------------|--------|
+| **A. Analytics & Reporting** | Calculate total income, expenses, and balance | ✅ `GET /summary` |
+| | Filter transactions by category/date | ✅ `GET /transactions?category=&startDate=&endDate=` |
+| | Show monthly trends | ✅ `GET /summary/trends` |
+| **B. AI or Automation** | Auto-categorize expenses using keyword matching | ✅ `categorizer` service |
+| | Suggest saving tips or budgets | ⬜ Not implemented |
+| | Real-time updates on new transactions | ⬜ Not implemented |
+| **C. Data Persistence** | Store/retrieve data with MongoDB | ✅ Mongoose models |
+| **D. Advanced Middleware** | Rate limiter | ✅ `express-rate-limit` |
+| | CORS and request logging | ✅ `cors` + `logger` middleware |
+| | In-memory cache with TTL on `/summary` | ✅ `CacheService` (60s TTL) |
+
+The two unimplemented items belong to option B (AI/Automation), which was not required once the mandatory options (A and C) were fulfilled.
+
+---
+
 ## Tech Stack
 
 | Layer      | Technology                                   |
