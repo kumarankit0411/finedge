@@ -35,20 +35,74 @@ Built with **Node.js, Express, MongoDB (Mongoose)** and fully covered by **Jest 
 
 ## Assignment Coverage
 
-| Requirement | Sub-feature | Status |
-|-------------|-------------|--------|
-| **A. Analytics & Reporting** | Calculate total income, expenses, and balance | ✅ `GET /summary` |
-| | Filter transactions by category/date | ✅ `GET /transactions?category=&startDate=&endDate=` |
-| | Show monthly trends | ✅ `GET /summary/trends` |
-| **B. AI or Automation** | Auto-categorize expenses using keyword matching | ✅ `categorizer` service |
-| | Suggest saving tips or budgets | ⬜ Not implemented |
-| | Real-time updates on new transactions | ⬜ Not implemented |
-| **C. Data Persistence** | Store/retrieve data with MongoDB | ✅ Mongoose models |
-| **D. Advanced Middleware** | Rate limiter | ✅ `express-rate-limit` |
-| | CORS and request logging | ✅ `cors` + `logger` middleware |
-| | In-memory cache with TTL on `/summary` | ✅ `CacheService` (60s TTL) |
+### 1. Fundamentals & Setup (10 pts)
 
-The two unimplemented items belong to option B (AI/Automation), which was not required once the mandatory options (A and C) were fulfilled.
+- ✅ `npm init` with `package.json`
+- ✅ MVC folder structure (`models/`, `controllers/`, `services/`, `routes/`)
+- ✅ `GET /health` health-check route
+
+### 2. REST API Development (30 pts)
+
+Core entities:
+
+- ✅ **User** — authentication via JWT
+- ✅ **Transaction** — `type` (income/expense), `category`, `amount`, `date`
+- ✅ **Budget** — monthly goal, savings target (`month` in `YYYY-MM`)
+
+Core endpoints (all required endpoints implemented):
+
+| Method | Route | Description | Status |
+|--------|-------|-------------|--------|
+| POST | `/users` | Register new user | ✅ |
+| POST | `/transactions` | Add income/expense | ✅ |
+| GET | `/transactions` | Fetch all transactions | ✅ |
+| GET | `/transactions/:id` | View single transaction | ✅ |
+| PATCH | `/transactions/:id` | Update transaction | ✅ |
+| DELETE | `/transactions/:id` | Delete transaction | ✅ |
+| GET | `/summary` | Fetch income-expense summary | ✅ |
+
+### 3. Async Programming & Middleware (20 pts)
+
+- ✅ `async/await` for all DB operations
+- ✅ Global error-handling middleware (`errorHandler`)
+- ✅ Logging middleware (`logger`)
+- ✅ Transaction input-validation middleware (`validator`)
+
+### 4. Advanced Node Concepts (20 pts)
+
+- ✅ Modular routes and controllers
+- ✅ Reusable services for business logic
+- ✅ Environment variables via `dotenv`
+- ✅ Custom error classes (`ApiError` and subclasses)
+- ➡️ File persistence — done via **MongoDB (Bonus option C)**; see note below
+- ✅ Test cases for core endpoints (Jest + Supertest)
+- ✅ JWT-based user session (`jsonwebtoken`)
+
+### 5. Bonus Features (20 pts) — chose two
+
+**Chosen: A (Analytics & Reporting) + C (Data Persistence)**
+
+| Option | Sub-feature | Status |
+|--------|-------------|--------|
+| **A** | Total income, expenses, and balance | ✅ `GET /summary` |
+| **A** | Filter transactions by category/date | ✅ |
+| **A** | Monthly trends | ✅ `GET /summary/trends` |
+| **C** | Store/retrieve data with MongoDB | ✅ Mongoose + `mongodb-memory-server` in tests |
+
+Implementations beyond the chosen two:
+
+| Option | Sub-feature | Status |
+|--------|-------------|--------|
+| **D** | Rate limiter | ✅ `express-rate-limit` |
+| **D** | CORS and request logging | ✅ |
+| **D** | In-memory TTL cache on `/summary` | ✅ `CacheService` |
+| **B** | Auto-categorize via keyword matching | ✅ `categorizer` |
+| **B** | Saving tips / budget suggestions | ⬜ Not implemented |
+| **B** | Real-time updates | ⬜ Not implemented |
+
+> **Notes**
+> - **`fs/promises` (section 4):** the brief lists file-based persistence, but also offers **MongoDB as Bonus option C** — chosen here, so data persistence is fulfilled via MongoDB instead of `fs/promises`.
+> - **The only unimplemented items** are the two sub-features of **Bonus B** (saving tips, real-time updates). Since the bonus requires choosing only two options, B was not selected — everything else in the brief is covered.
 
 ---
 
