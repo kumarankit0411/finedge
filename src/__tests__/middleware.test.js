@@ -2,6 +2,7 @@ const express = require('express');
 const request = require('supertest');
 const app = require('../app');
 const rateLimit = require('express-rate-limit');
+const fs = require('node:fs/promises');
 
 let userId;
 let token;
@@ -30,10 +31,16 @@ beforeEach(async () => {
 
 describe('Logger Middleware', () => {
     it('should log request details', async () => {
-      const consoleSpy = jest.spyOn(console, 'log');
-      await request(app).get('/health');
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+        const consoleSpy = jest.spyOn(console, 'log');
+        await request(app).get('/health');
+        expect(consoleSpy).toHaveBeenCalled();
+        consoleSpy.mockRestore();
+    });
+
+    it('should persist request logs to a file using fs/promises', async () => {
+        await request(app).get('/health');
+        const log = await fs.readFile('logs/requests.log', 'utf8');
+        expect(log).toContain('GET /health');
     });
 });
 

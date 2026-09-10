@@ -29,7 +29,7 @@ Built with **Node.js, Express, MongoDB (Mongoose)** and fully covered by **Jest 
 - **Monthly trends** — aggregation pipeline grouping income/expenses by month
 - **Filtering** — list transactions by category and date range
 - **Analytics-ready data model** — MongoDB aggregation for insights
-- **API hardening** — CORS origin allow-list, rate limiting (60 req/min per IP), central error handling with typed error classes, structured request logging
+- **API hardening** — CORS origin allow-list, rate limiting (60 req/min per IP), central error handling with typed error classes, request logging to console **and** a persistent file (`logs/requests.log`) via `fs/promises`
 
 ---
 
@@ -74,7 +74,7 @@ Core endpoints (all required endpoints implemented):
 - ✅ Reusable services for business logic
 - ✅ Environment variables via `dotenv`
 - ✅ Custom error classes (`ApiError` and subclasses)
-- ➡️ File persistence — done via **MongoDB (Bonus option C)**; see note below
+- ✅ File persistence via built-in `fs/promises` (request logs written to `logs/requests.log`)
 - ✅ Test cases for core endpoints (Jest + Supertest)
 - ✅ JWT-based user session (`jsonwebtoken`)
 
@@ -101,7 +101,7 @@ Implementations beyond the chosen two:
 | **B** | Real-time updates | ⬜ Not implemented |
 
 > **Notes**
-> - **`fs/promises` (section 4):** the brief lists file-based persistence, but also offers **MongoDB as Bonus option C** — chosen here, so data persistence is fulfilled via MongoDB instead of `fs/promises`.
+> - **Data persistence:** stored in **MongoDB** (Bonus option C), with built-in `fs/promises` additionally used for persistent request logs — covering both the section-4 file-persistence point and the MongoDB bonus.
 > - **The only unimplemented items** are the two sub-features of **Bonus B** (saving tips, real-time updates). Since the bonus requires choosing only two options, B was not selected — everything else in the brief is covered.
 
 ---
@@ -310,7 +310,7 @@ src/
 ├── middleware/            # Express middleware
 │   ├── auth.js            # JWT verification
 │   ├── validator.js       # Request body validation
-│   ├── logger.js          # Request logging
+│   ├── logger.js          # Request logging (console + file via fs/promises)
 │   ├── rateLimiter.js     # Per-IP rate limiting
 │   └── errorHandler.js    # Central error response formatting
 ├── errors/
