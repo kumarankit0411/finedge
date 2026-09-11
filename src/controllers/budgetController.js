@@ -22,10 +22,7 @@ const createBudget = async (req, res, next) => {
 const getBudgets = async (req, res, next) => {
   try {
     const { userId } = req.query;
-    if (!userId) {
-      throw new ValidationError('userId is required');
-    }
-    const budgets = await budgetService.getBudgetsByUser(userId);
+    const budgets = await budgetService.getBudgetsByUser(req.user.userId);
     res.status(200).json({ budgets });
   } catch (error) {
     next(error);
