@@ -23,16 +23,17 @@ const getTransactionsByUser = async (userId, filters = {}) => {
     return Transaction.find(query).sort({ date: -1 });
 };
 
-const getTransactionById = async (id) => {
-  return Transaction.findById(id);
+const getTransactionById = async (userId, id) => {
+  return Transaction.findOne({ _id: id, userId });
 };
 
-const updateTransaction = async (id, updates) => {
-  return Transaction.findByIdAndUpdate(id, updates, { returnDocument: 'after' });
+const updateTransaction = async (userId, id, updates) => {
+  const { _id, userId: ownerId, ...rest } = updates;
+  return Transaction.findOneAndUpdate({ _id: id, userId }, rest, { returnDocument: 'after' });
 };
 
-const deleteTransaction = async (id) => {
-  return Transaction.findByIdAndDelete(id);
+const deleteTransaction = async (userId, id) => {
+  return Transaction.findOneAndDelete({ _id: id, userId });
 };
 
 const getSummary = async (userId) => {

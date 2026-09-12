@@ -32,7 +32,7 @@ const getTransactions = async (req, res, next) => {
 
 const getTransactionById = async (req, res, next) => {
     try {
-      const transaction = await transactionService.getTransactionById(req.params.id);
+      const transaction = await transactionService.getTransactionById(req.user.userId, req.params.id);
       if (!transaction) {
         throw new NotFoundError('Transaction not found');
       }
@@ -44,7 +44,7 @@ const getTransactionById = async (req, res, next) => {
 
 const updateTransaction = async (req, res, next) => {
     try {
-      const transaction = await transactionService.updateTransaction(req.params.id, req.body);
+      const transaction = await transactionService.updateTransaction(req.user.userId, req.params.id, req.body);
       if (!transaction) {
         throw new NotFoundError('Transaction not found');
       }
@@ -56,7 +56,7 @@ const updateTransaction = async (req, res, next) => {
 
 const deleteTransaction = async (req, res, next) => {
     try {
-      const transaction = await transactionService.deleteTransaction(req.params.id);
+      const transaction = await transactionService.deleteTransaction(req.user.userId, req.params.id);
       if (!transaction) {
         throw new NotFoundError('Transaction not found');
       }

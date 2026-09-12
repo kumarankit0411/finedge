@@ -86,6 +86,14 @@ describe('POST /transactions', () => {
         expect(res.statusCode).toBe(201);
         expect(res.body.transaction.category).toBe('coffee');
     });
+
+    it('should return 400 when date is invalid', async () => {
+      const res = await request(app)
+        .post('/transactions')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ userId, type: 'expense', category: 'food', amount: 500, date: 'not-a-date' });
+      expect(res.statusCode).toBe(400);
+    });
 });
 
 describe('GET /transactions', () => {
@@ -132,6 +140,28 @@ describe('GET /transactions/:id', () => {
       const res = await request(app).get(`/transactions/${fakeId}`).set('Authorization', `Bearer ${token}`);
       expect(res.statusCode).toBe(404);
     });
+
+    it('should return 400 for a malformed transaction id', async () => {
+      const res = await request(app).get('/transactions/not-a-valid-id').set('Authorization', `Bearer ${token}`);
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('should return 404 when accessing another user\'s transaction', async () => {
+      const createRes = await request(app)
+        .post('/transactions')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'expense', category: 'rent', amount: 5000, date: '2025-01-01' });
+
+      const intruderEmail = `intruder${Date.now()}@example.com`;
+      await request(app).post('/users').send({ name: 'Intruder', email: intruderEmail, password: 'password123' });
+      const loginRes = await request(app).post('/users/login').send({ email: intruderEmail, password: 'password123' });
+      const intruderToken = loginRes.body.token;
+
+      const res = await request(app)
+        .get(`/transactions/${createRes.body.transaction._id}`)
+        .set('Authorization', `Bearer ${intruderToken}`);
+      expect(res.statusCode).toBe(404);
+    });
 });
 
 describe('PATCH /transactions/:id', () => {
@@ -155,6 +185,39 @@ describe('PATCH /transactions/:id', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.transaction).toHaveProperty('amount', 750);
     });
+
+    it('should return 404 when updating another user\'s transaction', async () => {
+      const createRes = await request(app)
+        .post('/transactions')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'expense', category: 'food', amount: 500, date: '2025-01-15' });
+
+      const intruderEmail = `intruder${Date.now()}-patch@example.com`;
+      await request(app).post('/users').send({ name: 'Intruder', email: intruderEmail, password: 'password123' });
+      const loginRes = await request(app).post('/users/login').send({ email: intruderEmail, password: 'password123' });
+      const intruderToken = loginRes.body.token;
+
+      const res = await request(app)
+        .patch(`/transactions/${createRes.body.transaction._id}`)
+        .set('Authorization', `Bearer ${intruderToken}`)
+        .send({ amount: 999 });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('should ignore a spoofed userId in the update body', async () => {
+      const createRes = await request(app)
+        .post('/transactions')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'expense', category: 'food', amount: 500, date: '2025-01-15' });
+
+      const otherId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .patch(`/transactions/${createRes.body.transaction._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ amount: 750, userId: otherId.toString() });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.transaction.userId).toBe(new mongoose.Types.ObjectId(userId).toString());
+    });
 });
 
 describe('DELETE /transactions/:id', () => {
@@ -176,6 +239,23 @@ describe('DELETE /transactions/:id', () => {
   
       const getRes = await request(app).get(`/transactions/${id}`).set('Authorization', `Bearer ${token}`);
       expect(getRes.statusCode).toBe(404);
+    });
+
+    it('should return 404 when deleting another user\'s transaction', async () => {
+      const createRes = await request(app)
+        .post('/transactions')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'expense', category: 'food', amount: 500, date: '2025-01-15' });
+
+      const intruderEmail = `intruder${Date.now()}-del@example.com`;
+      await request(app).post('/users').send({ name: 'Intruder', email: intruderEmail, password: 'password123' });
+      const loginRes = await request(app).post('/users/login').send({ email: intruderEmail, password: 'password123' });
+      const intruderToken = loginRes.body.token;
+
+      const res = await request(app)
+        .delete(`/transactions/${createRes.body.transaction._id}`)
+        .set('Authorization', `Bearer ${intruderToken}`);
+      expect(res.statusCode).toBe(404);
     });
 });
 

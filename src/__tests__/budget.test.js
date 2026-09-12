@@ -1,4 +1,5 @@
 const request = require('supertest');
+const mongoose = require('mongoose');
 const app = require('../app');
 
 let userId;
@@ -54,6 +55,19 @@ describe('POST /budgets', () => {
       });
     expect(res.statusCode).toBe(400);
   });
+
+  it('should return 400 when month format is invalid', async () => {
+    const res = await request(app)
+      .post('/budgets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        userId,
+        month: 'January 2025',
+        monthlyGoal: 30000,
+        savingsTarget: 10000
+      });
+    expect(res.statusCode).toBe(400);
+  });
 });
 
 describe('GET /budgets', () => {
@@ -97,5 +111,38 @@ describe('PATCH /budgets/:id', () => {
       .send({ monthlyGoal: 25000 });
     expect(res.statusCode).toBe(200);
     expect(res.body.budget).toHaveProperty('monthlyGoal', 25000);
+  });
+
+  it('should return 404 when updating another user\'s budget', async () => {
+    const createRes = await request(app)
+      .post('/budgets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ userId, month: '2025-01', monthlyGoal: 30000, savingsTarget: 10000 });
+
+    const intruderEmail = `intruder${Date.now()}-budget@example.com`;
+    await request(app).post('/users').send({ name: 'Intruder', email: intruderEmail, password: 'password123' });
+    const loginRes = await request(app).post('/users/login').send({ email: intruderEmail, password: 'password123' });
+    const intruderToken = loginRes.body.token;
+
+    const res = await request(app)
+      .patch(`/budgets/${createRes.body.budget._id}`)
+      .set('Authorization', `Bearer ${intruderToken}`)
+      .send({ monthlyGoal: 9999 });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('should ignore a spoofed userId in the update body', async () => {
+    const createRes = await request(app)
+      .post('/budgets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ userId, month: '2025-01', monthlyGoal: 30000, savingsTarget: 10000 });
+
+    const otherId = new mongoose.Types.ObjectId().toString();
+    const res = await request(app)
+      .patch(`/budgets/${createRes.body.budget._id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ monthlyGoal: 123, userId: otherId });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.budget.userId).toBe(userId);
   });
 });

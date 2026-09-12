@@ -31,7 +31,7 @@ const getBudgets = async (req, res, next) => {
 
 const updateBudget = async (req, res, next) => {
   try {
-    const budget = await budgetService.updateBudget(req.params.id, req.body);
+    const budget = await budgetService.updateBudget(req.user.userId, req.params.id, req.body);
     if (!budget) {
       throw new NotFoundError('Budget not found');
     }

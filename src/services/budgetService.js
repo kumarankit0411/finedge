@@ -15,8 +15,9 @@ const getBudgetById = async (id) => {
   return Budget.findById(id);
 };
 
-const updateBudget = async (id, updates) => {
-  return Budget.findByIdAndUpdate(id, updates, { returnDocument: 'after' });
+const updateBudget = async (userId, id, updates) => {
+  const { _id, userId: ownerId, ...rest } = updates;
+  return Budget.findOneAndUpdate({ _id: id, userId }, rest, { returnDocument: 'after' });
 };
 
 module.exports = {
